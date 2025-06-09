@@ -1,4 +1,3 @@
-# db.py
 import sqlite3
 
 DB_PATH = "drinks.db"
@@ -41,6 +40,14 @@ def init_db():
     conn.commit()
     conn.close()
 
+def get_user_count():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM users")
+    (n,) = cur.fetchone()
+    conn.close()
+    return n
+
 def create_user(pin: str, name: str, is_admin: bool=False):
     conn = get_connection()
     try:
@@ -49,9 +56,8 @@ def create_user(pin: str, name: str, is_admin: bool=False):
             (pin, name, int(is_admin))
         )
         conn.commit()
-        print(f"User '{name}' angelegt (admin={is_admin}).")
     except sqlite3.IntegrityError:
-        print("Fehler: Diese PIN ist bereits vergeben!")
+        raise ValueError("PIN schon vergeben")
     finally:
         conn.close()
 
@@ -74,9 +80,8 @@ def create_product(barcode: str, name: str, count: int=0):
             (barcode, name, count)
         )
         conn.commit()
-        print(f"Produkt '{name}' (Barcode: {barcode}) mit Bestand {count} angelegt.")
     except sqlite3.IntegrityError:
-        print("Fehler: Dieser Barcode ist bereits vorhanden!")
+        raise ValueError("Barcode existiert bereits")
     finally:
         conn.close()
 
@@ -86,37 +91,34 @@ def record_transaction(user_id: int, barcode: str):
     cur.execute("SELECT id FROM products WHERE barcode = ?", (barcode,))
     prod = cur.fetchone()
     if not prod:
-        print("Unbekannter Barcode. Bitte Produkt vorher anlegen.")
-    else:
-        prod_id = prod[0]
-        cur.execute(
-            "INSERT INTO transactions (user_id, product_id) VALUES (?, ?)",
-            (user_id, prod_id)
-        )
-        cur.execute(
-            "UPDATE products SET count = count - 1 WHERE id = ?",
-            (prod_id,)
-        )
-        conn.commit()
-        print("Buchung erfolgreich.")
+        conn.close()
+        raise ValueError("Unbekannter Barcode")
+    prod_id = prod[0]
+    cur.execute(
+        "INSERT INTO transactions (user_id, product_id) VALUES (?, ?)",
+        (user_id, prod_id)
+    )
+    cur.execute(
+        "UPDATE products SET count = count - 1 WHERE id = ?",
+        (prod_id,)
+    )
+    conn.commit()
     conn.close()
 
 def get_inventory():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, barcode, name, count FROM products ORDER BY name")
+    cur.execute("SELECT barcode, name, count FROM products ORDER BY name")
     rows = cur.fetchall()
     conn.close()
-    return rows
+    return rows  # List of (barcode, name, count)
 
 def update_product_count(barcode: str, new_count: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(
-        "UPDATE products SET count = ? WHERE barcode = ?",
-        (new_count, barcode)
-    )
+    cur.execute("UPDATE products SET count = ? WHERE barcode = ?", (new_count, barcode))
     if cur.rowcount == 0:
+        conn.close()
         raise ValueError("Barcode nicht gefunden")
     conn.commit()
     conn.close()

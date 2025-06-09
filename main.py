@@ -1,4 +1,3 @@
-# main.py
 import sqlite3
 import requests
 from db import (
