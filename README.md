@@ -40,4 +40,5 @@ Start automatisch erstellt, falls sie noch nicht existieren.
 - Produkte per Barcode erfassen
 - Buchungen und Bestandsverwaltung
 - Export eines Verbrauchsberichts als PDF
+- Export der Nutzerliste als PDF
 
