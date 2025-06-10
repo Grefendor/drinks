@@ -4,7 +4,8 @@ import requests
 import webbrowser
 from db import (
     init_db, get_user_count, authenticate, create_user,
-    create_product, record_transaction, get_inventory, update_product_count
+    create_product, record_transaction, get_inventory, update_product_count,
+    update_pin
 )
 from admin import export_pdf
 
@@ -127,7 +128,8 @@ class AdminFrame(tk.Frame):
             ("Neues Produkt", self._new_prod),
             ("Bestand anzeigen", self._show_inv),
             ("Bestand bearbeiten", self._edit_inv),
-            ("PDF exportieren", lambda: self._export()),
+            ("PDF exportieren", self._export),
+            ("PIN ändern", self._edit_pin),
             ("Logout", lambda: master._show_frame(LoginFrame))
         ]
         for t,cmd in btns:
@@ -175,6 +177,17 @@ class AdminFrame(tk.Frame):
         try:
             update_product_count(bc,int(nc))
             messagebox.showinfo("OK","Bestand aktualisiert")
+        except Exception as e:
+            messagebox.showerror("Fehler",str(e))
+
+    def _edit_pin(self):
+        from tkinter.simpledialog import askstring
+        bc = askstring("Bearbeiten","Name:")
+        if not bc: return
+        nc = askstring("Bearbeiten","Neuer PIN:")
+        try:
+            update_pin(bc, nc)
+            messagebox.showinfo("OK","PIN aktualisiert")
         except Exception as e:
             messagebox.showerror("Fehler",str(e))
 

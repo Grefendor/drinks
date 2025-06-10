@@ -122,3 +122,13 @@ def update_product_count(barcode: str, new_count: int):
         raise ValueError("Barcode nicht gefunden")
     conn.commit()
     conn.close()
+
+def update_pin(name: str, new_pin: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET pin = ? WHERE name = ?", (new_pin, name))
+    if cur.rowcount == 0:
+        conn.close()
+        raise ValueError("Name nicht gefunden")
+    conn.commit()
+    conn.close()
