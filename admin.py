@@ -47,11 +47,11 @@ def export_users_pdf(path="users.pdf"):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, pin FROM users ORDER BY id")
+    cur.execute("SELECT id, name, pin, is_admin FROM users ORDER BY id")
     rows = cur.fetchall()
     conn.close()
 
-    data = [("ID", "Name", "PIN")] + rows
+    data = [("ID", "Name", "PIN", "Admin")] + rows
     doc = SimpleDocTemplate(path, pagesize=A4)
     table = Table(data, colWidths=[50, 200, 100])
     table.setStyle(TableStyle([
