@@ -55,6 +55,7 @@ class SetupFrame(tk.Frame):
         self.pin.insert(0, "PIN eingeben")
         self.name = ttk.Entry(self); self.name.pack(pady=5)
         self.name.insert(0, "Name")
+        self.pin.focus_set()
         self.pin.bind("<Return>", lambda e: self._create())
         self.name.bind("<Return>", lambda e: self._create())
         ttk.Button(self, text="Anlegen", command=self._create).pack(pady=10)
@@ -63,14 +64,14 @@ class SetupFrame(tk.Frame):
         pin = self.pin.get().strip()
         name = self.name.get().strip()
         if not pin or not name:
-            messagebox.showerror("Fehler","PIN und Name dürfen nicht leer sein")
+            messagebox.showerror("Fehler","PIN und Name dürfen nicht leer sein", parent=self)
             return
         try:
             create_user(pin,name,True)
         except ValueError as e:
-            messagebox.showerror("Fehler",str(e))
+            messagebox.showerror("Fehler",str(e), parent=self)
             return
-        messagebox.showinfo("OK","Admin angelegt")
+        messagebox.showinfo("OK","Admin angelegt", parent=self)
         self.master._show_frame(LoginFrame)
 
     def on_show(self): pass
@@ -87,7 +88,7 @@ class LoginFrame(tk.Frame):
         pin = self.pin.get().strip()
         auth = authenticate(pin)
         if not auth:
-            messagebox.showerror("Fehler","Ungültiger PIN")
+            messagebox.showerror("Fehler","Ungültiger PIN", parent=self)
             return
         self.master.user = auth
         if auth[2]:
@@ -97,6 +98,7 @@ class LoginFrame(tk.Frame):
 
     def on_show(self):
         self.pin.delete(0,tk.END)
+        self.pin.focus_set()
 
 class UserFrame(tk.Frame):
     def __init__(self, master):
@@ -111,10 +113,11 @@ class UserFrame(tk.Frame):
         bc = self.entry.get().strip()
         try:
             record_transaction(self.master.user[0], bc)
-            messagebox.showinfo("OK","Buchung erfolgreich")
+            messagebox.showinfo("OK","Buchung erfolgreich", parent=self)
         except Exception as e:
-            messagebox.showerror("Fehler",str(e))
+            messagebox.showerror("Fehler",str(e), parent=self)
         self.entry.delete(0,tk.END)
+        self.entry.focus_set()
 
     def on_show(self):
         self.entry.delete(0,tk.END)
@@ -139,61 +142,65 @@ class AdminFrame(tk.Frame):
 
     def _new_user(self):
         from tkinter.simpledialog import askstring
-        pin = askstring("User anlegen","PIN:")
-        name= askstring("User anlegen","Name:")
-        adm = messagebox.askyesno("User anlegen","Soll Admin sein?")
+        root = self.winfo_toplevel()
+        pin = askstring("User anlegen", "PIN:", parent=root)
+        name = askstring("User anlegen", "Name:", parent=root)
+        adm = messagebox.askyesno("User anlegen", "Soll Admin sein?", parent=root)
         if pin and name:
             try: create_user(pin,name,adm)
-            except ValueError as e: return messagebox.showerror("Fehler",str(e))
-            messagebox.showinfo("OK","User angelegt")
+            except ValueError as e: return messagebox.showerror("Fehler",str(e), parent=self)
+            messagebox.showinfo("OK","User angelegt", parent=self)
 
     def _new_prod(self):
         from tkinter.simpledialog import askstring
-        bc = askstring("Produkt","Barcode:")
+        root = self.winfo_toplevel()
+        bc = askstring("Produkt", "Barcode:", parent=root)
         if not bc: return
         try:
             name = fetch_product_name_online(bc)
-            messagebox.showinfo("Online","Gefunden: "+name)
+            messagebox.showinfo("Online", "Gefunden: "+name, parent=root)
         except:
-            name = askstring("Produkt","Name manuell:")
-        cnt = askstring("Produkt","Anfangsbestand (Zahl):") or "0"
+            name = askstring("Produkt", "Name manuell:", parent=root)
+        cnt = askstring("Produkt", "Anfangsbestand (Zahl):", parent=root) or "0"
         try:
             cnt = int(cnt)
             create_product(bc,name,cnt)
-            messagebox.showinfo("OK","Produkt angelegt")
+            messagebox.showinfo("OK", "Produkt angelegt", parent=root)
         except Exception as e:
-            messagebox.showerror("Fehler",str(e))
+            messagebox.showerror("Fehler", str(e), parent=root)
 
     def _show_inv(self):
         inv = get_inventory()
         text = "\n".join(f"{n}: {b} (Bestand: {c})" for b,n,c in inv)
-        messagebox.showinfo("Inventar", text or "Keine Produkte")
+        messagebox.showinfo("Inventar", text or "Keine Produkte", parent=self)
 
     def _edit_inv(self):
         from tkinter.simpledialog import askstring
-        bc = askstring("Bearbeiten","Barcode:")
+        root = self.winfo_toplevel()
+        bc = askstring("Bearbeiten", "Barcode:", parent=root)
         if not bc: return
-        nc = askstring("Bearbeiten","Neuer Bestand:")
+        nc = askstring("Bearbeiten", "Neuer Bestand:", parent=root)
         try:
             update_product_count(bc,int(nc))
-            messagebox.showinfo("OK","Bestand aktualisiert")
+            messagebox.showinfo("OK", "Bestand aktualisiert", parent=root)
         except Exception as e:
-            messagebox.showerror("Fehler",str(e))
+            messagebox.showerror("Fehler", str(e), parent=root)
 
     def _edit_pin(self):
         from tkinter.simpledialog import askstring
-        bc = askstring("Bearbeiten","Name:")
+        root = self.winfo_toplevel()
+        bc = askstring("Bearbeiten", "Name:", parent=root)
         if not bc: return
-        nc = askstring("Bearbeiten","Neuer PIN:")
+        nc = askstring("Bearbeiten", "Neuer PIN:", parent=root)
         try:
             update_pin(bc, nc)
-            messagebox.showinfo("OK","PIN aktualisiert")
+            messagebox.showinfo("OK", "PIN aktualisiert", parent=root)
         except Exception as e:
-            messagebox.showerror("Fehler",str(e))
+            messagebox.showerror("Fehler", str(e), parent=root)
 
     def _export(self):
         export_pdf()
-        messagebox.showinfo("OK","report.pdf erstellt")
+        messagebox.showinfo("OK","report.pdf erstellt", parent=self)
         webbrowser.open("report.pdf")
 
 if __name__ == "__main__":
