@@ -1,7 +1,4 @@
 from db import get_connection
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-from reportlab.lib import colors
 
 def export_pdf(path="report.pdf"):
     """
@@ -10,6 +7,10 @@ def export_pdf(path="report.pdf"):
       - Produkt
       - Verbrauch (Anzahl Buchungen)
     """
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+    from reportlab.lib import colors
+
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
