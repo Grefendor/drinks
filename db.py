@@ -132,3 +132,39 @@ def update_pin(name: str, new_pin: str):
         raise ValueError("Name nicht gefunden")
     conn.commit()
     conn.close()
+
+
+def delete_user(name: str, current_user_id: int):
+    """Delete a user by name ensuring at least one admin remains."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, is_admin FROM users WHERE name = ?", (name,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        raise ValueError("Name nicht gefunden")
+    user_id, is_admin = row
+    if user_id == current_user_id:
+        conn.close()
+        raise ValueError("Eigenen Account kann man nicht löschen")
+    if is_admin:
+        cur.execute("SELECT COUNT(*) FROM users WHERE is_admin = 1")
+        (admin_count,) = cur.fetchone()
+        if admin_count <= 1:
+            conn.close()
+            raise ValueError("Mindestens ein Admin muss bestehen bleiben")
+    cur.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def delete_product(barcode: str):
+    """Delete a product by barcode."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM products WHERE barcode = ?", (barcode,))
+    if cur.rowcount == 0:
+        conn.close()
+        raise ValueError("Barcode nicht gefunden")
+    conn.commit()
+    conn.close()
