@@ -41,4 +41,5 @@ Start automatisch erstellt, falls sie noch nicht existieren.
 - Buchungen und Bestandsverwaltung
 - Export eines Verbrauchsberichts als PDF
 - Export der Nutzerliste als PDF
+- Export der Produktliste als PDF
 

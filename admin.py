@@ -60,3 +60,26 @@ def export_users_pdf(path="users.pdf"):
         ("VALIGN",     (0,0), (-1,-1),  "MIDDLE"),
     ]))
     doc.build([table])
+
+
+def export_inventory_pdf(path="inventory.pdf"):
+    """Exportiert alle Produkte als Tabelle (ID, Barcode, Name, Bestand)."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+    from reportlab.lib import colors
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, barcode, name, count FROM products ORDER BY name")
+    rows = cur.fetchall()
+    conn.close()
+
+    data = [("ID", "Barcode", "Name", "Bestand")] + rows
+    doc = SimpleDocTemplate(path, pagesize=A4)
+    table = Table(data, colWidths=[50, 100, 200, 80])
+    table.setStyle(TableStyle([
+        ("GRID",       (0,0), (-1,-1), 0.5, colors.black),
+        ("BACKGROUND", (0,0), (-1,0),   colors.lightgrey),
+        ("VALIGN",     (0,0), (-1,-1),  "MIDDLE"),
+    ]))
+    doc.build([table])

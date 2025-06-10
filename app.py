@@ -7,7 +7,7 @@ from db import (
     create_product, record_transaction, get_inventory, update_product_count,
     update_pin
 )
-from admin import export_pdf, export_users_pdf
+from admin import export_pdf, export_users_pdf, export_inventory_pdf
 
 def fetch_product_name_online(barcode: str) -> str:
     url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
@@ -133,6 +133,7 @@ class AdminFrame(tk.Frame):
             ("Bestand bearbeiten", self._edit_inv),
             ("PDF exportieren", self._export),
             ("Userliste PDF", self._export_users),
+            ("Produktliste PDF", self._export_inv),
             ("PIN ändern", self._edit_pin),
             ("Logout", lambda: master._show_frame(LoginFrame))
         ]
@@ -172,7 +173,9 @@ class AdminFrame(tk.Frame):
 
     def _show_inv(self):
         inv = get_inventory()
-        text = "\n".join(f"{n}: {b} (Bestand: {c})" for b,n,c in inv)
+        text = "\n".join(
+            f"{i}: {n} ({b}) - Bestand: {c}" for i, b, n, c in inv
+        )
         messagebox.showinfo("Inventar", text or "Keine Produkte", parent=self)
 
     def _edit_inv(self):
@@ -208,6 +211,11 @@ class AdminFrame(tk.Frame):
         export_users_pdf()
         messagebox.showinfo("OK", "users.pdf erstellt", parent=self)
         webbrowser.open("users.pdf")
+
+    def _export_inv(self):
+        export_inventory_pdf()
+        messagebox.showinfo("OK", "inventory.pdf erstellt", parent=self)
+        webbrowser.open("inventory.pdf")
 
 if __name__ == "__main__":
     App().mainloop()
