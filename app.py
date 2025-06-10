@@ -76,7 +76,8 @@ class SetupFrame(tk.Frame):
         messagebox.showinfo("OK","Admin angelegt", parent=self)
         self.master._show_frame(LoginFrame)
 
-    def on_show(self): pass
+    def on_show(self):
+        self.pin.focus_set()
 
 class LoginFrame(tk.Frame):
     def __init__(self, master):
@@ -111,22 +112,50 @@ class UserFrame(tk.Frame):
         self.entry.pack(pady=5)
         self.entry.focus()
         self.entry.bind("<Return>", lambda e: self._book())
+        self.qty = ttk.Entry(self, width=5)
+        self.qty.pack(pady=5)
+        self.qty.insert(0, "1")
+        self.qty.bind("<Return>", lambda e: self._set_multi())
         ttk.Button(self, text="Buchen", command=self._book).pack(pady=10)
+        ttk.Button(self, text="N\u00e4chster Scan xN", command=self._set_multi).pack(pady=5)
         ttk.Button(self, text="Logout", command=lambda: master._show_frame(LoginFrame)).pack(side="bottom", pady=20)
+        self.next_qty = 1
+        self.logout_after_id = None
+
+    def _restart_timer(self):
+        if self.logout_after_id:
+            self.after_cancel(self.logout_after_id)
+        self.logout_after_id = self.after(20000, lambda: self.master._show_frame(LoginFrame))
+
+    def _set_multi(self):
+        try:
+            self.next_qty = max(1, int(self.qty.get()))
+            messagebox.showinfo("OK", f"N\u00e4chster Scan wird {self.next_qty}-mal gebucht", parent=self)
+            self.entry.focus_set()
+        except ValueError:
+            messagebox.showerror("Fehler", "Ung\u00fcltige Zahl", parent=self)
 
     def _book(self):
         bc = self.entry.get().strip()
         try:
-            record_transaction(self.master.user[0], bc)
+            record_transaction(self.master.user[0], bc, self.next_qty)
+            self.next_qty = 1
+            self.qty.delete(0, tk.END)
+            self.qty.insert(0, "1")
             messagebox.showinfo("OK","Buchung erfolgreich", parent=self)
         except Exception as e:
             messagebox.showerror("Fehler",str(e), parent=self)
         self.entry.delete(0,tk.END)
         self.entry.focus_set()
+        self._restart_timer()
 
     def on_show(self):
         self.entry.delete(0,tk.END)
+        self.qty.delete(0, tk.END)
+        self.qty.insert(0, "1")
+        self.next_qty = 1
         self.entry.focus()
+        self._restart_timer()
 
 class AdminFrame(tk.Frame):
     def __init__(self, master):

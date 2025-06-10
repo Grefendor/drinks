@@ -85,7 +85,7 @@ def create_product(barcode: str, name: str, count: int=0):
     finally:
         conn.close()
 
-def record_transaction(user_id: int, barcode: str):
+def record_transaction(user_id: int, barcode: str, quantity: int = 1):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, count FROM products WHERE barcode = ?", (barcode,))
@@ -94,16 +94,20 @@ def record_transaction(user_id: int, barcode: str):
         conn.close()
         raise ValueError("Unbekannter Barcode")
     prod_id, current_count = prod
-    if current_count <= 0:
+    if quantity <= 0:
+        conn.close()
+        raise ValueError("Ungültige Menge")
+    if current_count < quantity:
         conn.close()
         raise ValueError("Produkt nicht mehr vorrätig")
+    for _ in range(quantity):
+        cur.execute(
+            "INSERT INTO transactions (user_id, product_id) VALUES (?, ?)",
+            (user_id, prod_id)
+        )
     cur.execute(
-        "INSERT INTO transactions (user_id, product_id) VALUES (?, ?)",
-        (user_id, prod_id)
-    )
-    cur.execute(
-        "UPDATE products SET count = count - 1 WHERE id = ?",
-        (prod_id,)
+        "UPDATE products SET count = count - ? WHERE id = ?",
+        (quantity, prod_id)
     )
     conn.commit()
     conn.close()
