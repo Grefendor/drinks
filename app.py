@@ -5,7 +5,7 @@ import webbrowser
 from db import (
     init_db, get_user_count, authenticate, create_user,
     create_product, record_transaction, get_inventory, update_product_count,
-    update_pin
+    update_pin, delete_user, delete_product
 )
 from admin import export_pdf, export_users_pdf, export_inventory_pdf
 
@@ -131,6 +131,8 @@ class AdminFrame(tk.Frame):
             ("Neues Produkt", self._new_prod),
             ("Bestand anzeigen", self._show_inv),
             ("Bestand bearbeiten", self._edit_inv),
+            ("User löschen", self._del_user),
+            ("Produkt löschen", self._del_prod),
             ("PDF exportieren", self._export),
             ("Userliste PDF", self._export_users),
             ("Produktliste PDF", self._export_inv),
@@ -187,6 +189,42 @@ class AdminFrame(tk.Frame):
         try:
             update_product_count(bc,int(nc))
             messagebox.showinfo("OK", "Bestand aktualisiert", parent=root)
+        except Exception as e:
+            messagebox.showerror("Fehler", str(e), parent=root)
+
+    def _del_user(self):
+        from tkinter.simpledialog import askstring
+        root = self.winfo_toplevel()
+        name = askstring("User löschen", "Name:", parent=root)
+        if not name:
+            return
+        if name == self.master.user[1]:
+            return messagebox.showerror(
+                "Fehler", "Eigenen Account kann man nicht löschen", parent=root
+            )
+        if not messagebox.askyesno(
+            "Bestätigung", f"{name} wirklich löschen?", parent=root
+        ):
+            return
+        try:
+            delete_user(name, self.master.user[0])
+            messagebox.showinfo("OK", "User gelöscht", parent=root)
+        except Exception as e:
+            messagebox.showerror("Fehler", str(e), parent=root)
+
+    def _del_prod(self):
+        from tkinter.simpledialog import askstring
+        root = self.winfo_toplevel()
+        bc = askstring("Produkt löschen", "Barcode:", parent=root)
+        if not bc:
+            return
+        if not messagebox.askyesno(
+            "Bestätigung", f"Produkt {bc} löschen?", parent=root
+        ):
+            return
+        try:
+            delete_product(bc)
+            messagebox.showinfo("OK", "Produkt gelöscht", parent=root)
         except Exception as e:
             messagebox.showerror("Fehler", str(e), parent=root)
 

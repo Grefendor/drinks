@@ -2,7 +2,8 @@ import sqlite3
 import requests
 from db import (
     init_db, authenticate, create_user, create_product,
-    record_transaction, get_inventory, update_product_count
+    record_transaction, get_inventory, update_product_count,
+    delete_user, delete_product
 )
 from admin import export_pdf, export_users_pdf, export_inventory_pdf
 
@@ -58,7 +59,35 @@ def edit_inventory():
     except ValueError as e:
         print(f"Fehler: {e}")
 
-def admin_menu():
+def delete_user_cli(current_user_id: int):
+    name = input("Name des Nutzers zum Löschen: ").strip()
+    if not name:
+        return
+    confirm = input(f"{name} wirklich löschen? (j/N): ").lower().startswith("j")
+    if not confirm:
+        return
+    try:
+        delete_user(name, current_user_id)
+        print("Nutzer gelöscht.")
+    except Exception as e:
+        print(f"Fehler: {e}")
+
+
+def delete_product_cli():
+    bc = input("Barcode des Produkts zum Löschen: ").strip()
+    if not bc:
+        return
+    confirm = input(f"Produkt {bc} löschen? (j/N): ").lower().startswith("j")
+    if not confirm:
+        return
+    try:
+        delete_product(bc)
+        print("Produkt gelöscht.")
+    except Exception as e:
+        print(f"Fehler: {e}")
+
+
+def admin_menu(current_user_id: int):
     while True:
         print("\n=== Admin-Menü ===")
         print("1) Neuen Nutzer anlegen")
@@ -68,7 +97,9 @@ def admin_menu():
         print("5) PDF-Report exportieren")
         print("6) Userliste exportieren")
         print("7) Produktliste exportieren")
-        print("8) Logout")
+        print("8) Nutzer löschen")
+        print("9) Produkt löschen")
+        print("10) Logout")
         choice = input("Auswahl: ").strip()
         if choice == "1":
             pin   = input("Neue PIN: ").strip()
@@ -97,6 +128,10 @@ def admin_menu():
         elif choice == "7":
             export_inventory_pdf()
         elif choice == "8":
+            delete_user_cli(current_user_id)
+        elif choice == "9":
+            delete_product_cli()
+        elif choice == "10":
             break
         else:
             print("Ungültige Auswahl.")
@@ -119,7 +154,7 @@ def main():
             continue
         user_id, name, is_admin = auth
         if is_admin:
-            admin_menu()
+            admin_menu(user_id)
         else:
             user_menu(user_id, name)
 
