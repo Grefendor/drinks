@@ -4,7 +4,7 @@ from db import (
     init_db, authenticate, create_user, create_product,
     record_transaction, get_inventory, update_product_count
 )
-from admin import export_pdf, export_users_pdf
+from admin import export_pdf, export_users_pdf, export_inventory_pdf
 
 def fetch_product_name_online(barcode: str) -> str:
     """
@@ -67,7 +67,8 @@ def admin_menu():
         print("4) Bestand bearbeiten")
         print("5) PDF-Report exportieren")
         print("6) Userliste exportieren")
-        print("7) Logout")
+        print("7) Produktliste exportieren")
+        print("8) Logout")
         choice = input("Auswahl: ").strip()
         if choice == "1":
             pin   = input("Neue PIN: ").strip()
@@ -94,6 +95,8 @@ def admin_menu():
         elif choice == "6":
             export_users_pdf()
         elif choice == "7":
+            export_inventory_pdf()
+        elif choice == "8":
             break
         else:
             print("Ungültige Auswahl.")

@@ -108,10 +108,10 @@ def record_transaction(user_id: int, barcode: str):
 def get_inventory():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT barcode, name, count FROM products ORDER BY name")
+    cur.execute("SELECT id, barcode, name, count FROM products ORDER BY name")
     rows = cur.fetchall()
     conn.close()
-    return rows  # List of (barcode, name, count)
+    return rows  # List of (id, barcode, name, count)
 
 def update_product_count(barcode: str, new_count: int):
     conn = get_connection()
