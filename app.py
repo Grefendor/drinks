@@ -108,6 +108,13 @@ class UserFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         ttk.Label(self, text="Barcode scannen", font=("Arial",24)).pack(pady=20)
+        self.summary_var = tk.StringVar()
+        tk.Label(
+            self,
+            textvariable=self.summary_var,
+            justify="left",
+            anchor="w",
+        ).pack(pady=5, fill="x", padx=20)
         self.entry = ttk.Entry(self)
         self.entry.pack(pady=5)
         self.entry.focus()
@@ -159,7 +166,7 @@ class UserFrame(tk.Frame):
             text = "\n".join(f"{n}: {c}" for n, c in summary)
         else:
             text = "Keine Buchungen vorhanden."
-        messagebox.showinfo("Übersicht", text, parent=self)
+        self.summary_var.set(text)
         self.entry.focus()
         self._restart_timer()
 
