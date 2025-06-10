@@ -5,7 +5,7 @@ import webbrowser
 from db import (
     init_db, get_user_count, authenticate, create_user,
     create_product, record_transaction, get_inventory, update_product_count,
-    update_pin, delete_user, delete_product
+    update_pin, delete_user, delete_product, get_user_summary
 )
 from admin import export_pdf, export_users_pdf, export_inventory_pdf
 
@@ -154,6 +154,12 @@ class UserFrame(tk.Frame):
         self.qty.delete(0, tk.END)
         self.qty.insert(0, "1")
         self.next_qty = 1
+        summary = get_user_summary(self.master.user[0])
+        if summary:
+            text = "\n".join(f"{n}: {c}" for n, c in summary)
+        else:
+            text = "Keine Buchungen vorhanden."
+        messagebox.showinfo("Übersicht", text, parent=self)
         self.entry.focus()
         self._restart_timer()
 
