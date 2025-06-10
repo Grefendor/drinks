@@ -88,12 +88,15 @@ def create_product(barcode: str, name: str, count: int=0):
 def record_transaction(user_id: int, barcode: str):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM products WHERE barcode = ?", (barcode,))
+    cur.execute("SELECT id, count FROM products WHERE barcode = ?", (barcode,))
     prod = cur.fetchone()
     if not prod:
         conn.close()
         raise ValueError("Unbekannter Barcode")
-    prod_id = prod[0]
+    prod_id, current_count = prod
+    if current_count <= 0:
+        conn.close()
+        raise ValueError("Produkt nicht mehr vorrätig")
     cur.execute(
         "INSERT INTO transactions (user_id, product_id) VALUES (?, ?)",
         (user_id, prod_id)
