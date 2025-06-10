@@ -51,9 +51,11 @@ class SetupFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         ttk.Label(self, text="Erster Admin anlegen", font=("Arial",24)).pack(pady=20)
-        self.pin = ttk.Entry(self, show="*"); self.pin.pack(pady=5)
+        self.pin = ttk.Entry(self, show="*")
+        self.pin.pack(pady=5)
         self.pin.insert(0, "PIN eingeben")
-        self.name = ttk.Entry(self); self.name.pack(pady=5)
+        self.name = ttk.Entry(self)
+        self.name.pack(pady=5)
         self.name.insert(0, "Name")
         self.pin.focus_set()
         self.pin.bind("<Return>", lambda e: self._create())
@@ -80,7 +82,8 @@ class LoginFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         ttk.Label(self, text="Login (PIN)", font=("Arial",24)).pack(pady=20)
-        self.pin = ttk.Entry(self, show="*"); self.pin.pack(pady=5)
+        self.pin = ttk.Entry(self, show="*")
+        self.pin.pack(pady=5)
         self.pin.bind("<Return>", lambda e: self._login())
         ttk.Button(self, text="Login", command=self._login).pack(pady=10)
 
@@ -104,7 +107,9 @@ class UserFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         ttk.Label(self, text="Barcode scannen", font=("Arial",24)).pack(pady=20)
-        self.entry = ttk.Entry(self); self.entry.pack(pady=5); self.entry.focus()
+        self.entry = ttk.Entry(self)
+        self.entry.pack(pady=5)
+        self.entry.focus()
         self.entry.bind("<Return>", lambda e: self._book())
         ttk.Button(self, text="Buchen", command=self._book).pack(pady=10)
         ttk.Button(self, text="Logout", command=lambda: master._show_frame(LoginFrame)).pack(side="bottom", pady=20)
@@ -151,19 +156,22 @@ class AdminFrame(tk.Frame):
         name = askstring("User anlegen", "Name:", parent=root)
         adm = messagebox.askyesno("User anlegen", "Soll Admin sein?", parent=root)
         if pin and name:
-            try: create_user(pin,name,adm)
-            except ValueError as e: return messagebox.showerror("Fehler",str(e), parent=self)
-            messagebox.showinfo("OK","User angelegt", parent=self)
+            try:
+                create_user(pin, name, adm)
+            except ValueError as e:
+                return messagebox.showerror("Fehler", str(e), parent=self)
+            messagebox.showinfo("OK", "User angelegt", parent=self)
 
     def _new_prod(self):
         from tkinter.simpledialog import askstring
         root = self.winfo_toplevel()
         bc = askstring("Produkt", "Barcode:", parent=root)
-        if not bc: return
+        if not bc:
+            return
         try:
             name = fetch_product_name_online(bc)
             messagebox.showinfo("Online", "Gefunden: "+name, parent=root)
-        except:
+        except Exception:
             name = askstring("Produkt", "Name manuell:", parent=root)
         cnt = askstring("Produkt", "Anfangsbestand (Zahl):", parent=root) or "0"
         try:
@@ -184,7 +192,8 @@ class AdminFrame(tk.Frame):
         from tkinter.simpledialog import askstring
         root = self.winfo_toplevel()
         bc = askstring("Bearbeiten", "Barcode:", parent=root)
-        if not bc: return
+        if not bc:
+            return
         nc = askstring("Bearbeiten", "Neuer Bestand:", parent=root)
         try:
             update_product_count(bc,int(nc))
@@ -231,11 +240,12 @@ class AdminFrame(tk.Frame):
     def _edit_pin(self):
         from tkinter.simpledialog import askstring
         root = self.winfo_toplevel()
-        bc = askstring("Bearbeiten", "Name:", parent=root)
-        if not bc: return
-        nc = askstring("Bearbeiten", "Neuer PIN:", parent=root)
+        username = askstring("Bearbeiten", "Name:", parent=root)
+        if not username:
+            return
+        new_pin = askstring("Bearbeiten", "Neuer PIN:", parent=root)
         try:
-            update_pin(bc, nc)
+            update_pin(username, new_pin)
             messagebox.showinfo("OK", "PIN aktualisiert", parent=root)
         except Exception as e:
             messagebox.showerror("Fehler", str(e), parent=root)
