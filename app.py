@@ -124,8 +124,8 @@ class UserFrame(tk.Frame):
         tk.Label(
             self,
             textvariable=self.summary_var,
-            justify="left",
-            anchor="w",
+            justify="center",
+            anchor="center",
         ).pack(pady=5, fill="x", padx=20)
         self.logout_after_id = None
 
