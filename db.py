@@ -24,9 +24,15 @@ def init_db():
             id       INTEGER PRIMARY KEY,
             barcode  TEXT UNIQUE NOT NULL,
             name     TEXT NOT NULL,
-            count    INTEGER NOT NULL DEFAULT 0
+            count    INTEGER NOT NULL DEFAULT 0,
+            price    REAL NOT NULL DEFAULT 0
         )
     """)
+    # Bestehende Datenbank ggf. um Preis-Spalte erweitern
+    c.execute("PRAGMA table_info(products)")
+    cols = [r[1] for r in c.fetchall()]
+    if "price" not in cols:
+        c.execute("ALTER TABLE products ADD COLUMN price REAL NOT NULL DEFAULT 0")
     c.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             id          INTEGER PRIMARY KEY,
@@ -72,12 +78,12 @@ def authenticate(pin: str):
     conn.close()
     return row  # (id, name, is_admin) oder None
 
-def create_product(barcode: str, name: str, count: int=0):
+def create_product(barcode: str, name: str, count: int=0, price: float=0.0):
     conn = get_connection()
     try:
         conn.execute(
-            "INSERT INTO products (barcode, name, count) VALUES (?, ?, ?)",
-            (barcode, name, count)
+            "INSERT INTO products (barcode, name, count, price) VALUES (?, ?, ?, ?)",
+            (barcode, name, count, price)
         )
         conn.commit()
     except sqlite3.IntegrityError:
@@ -115,10 +121,10 @@ def record_transaction(user_id: int, barcode: str, quantity: int = 1):
 def get_inventory():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, barcode, name, count FROM products ORDER BY name")
+    cur.execute("SELECT id, barcode, name, count, price FROM products ORDER BY name")
     rows = cur.fetchall()
     conn.close()
-    return rows  # List of (id, barcode, name, count)
+    return rows  # List of (id, barcode, name, count, price)
 
 def update_product_count(barcode: str, new_count: int):
     conn = get_connection()
@@ -183,7 +189,7 @@ def get_user_summary(user_id: int):
     cur = conn.cursor()
     cur.execute(
         """
-        SELECT p.name, COUNT(t.id) as count
+        SELECT p.name, p.price, COUNT(t.id) as count, COUNT(t.id)*p.price as total
         FROM transactions t
         JOIN products p ON t.product_id = p.id
         WHERE t.user_id = ?

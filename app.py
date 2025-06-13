@@ -163,7 +163,13 @@ class UserFrame(tk.Frame):
         self.next_qty = 1
         summary = get_user_summary(self.master.user[0])
         if summary:
-            text = "\n".join(f"{n}: {c}" for n, c in summary)
+            total = 0
+            lines = []
+            for n, price, c, row_total in summary:
+                lines.append(f"{n}: {c} x {price:.2f} = {row_total:.2f}")
+                total += row_total
+            lines.append(f"Gesamt: {total:.2f}")
+            text = "\n".join(lines)
         else:
             text = "Keine Buchungen vorhanden."
         self.summary_var.set(text)
@@ -216,9 +222,11 @@ class AdminFrame(tk.Frame):
         except Exception:
             name = askstring("Produkt", "Name manuell:", parent=root)
         cnt = askstring("Produkt", "Anfangsbestand (Zahl):", parent=root) or "0"
+        price = askstring("Produkt", "Preis pro Stück:", parent=root) or "0"
         try:
             cnt = int(cnt)
-            create_product(bc,name,cnt)
+            price_val = float(price.replace(",", "."))
+            create_product(bc, name, cnt, price_val)
             messagebox.showinfo("OK", "Produkt angelegt", parent=root)
         except Exception as e:
             messagebox.showerror("Fehler", str(e), parent=root)
@@ -226,7 +234,7 @@ class AdminFrame(tk.Frame):
     def _show_inv(self):
         inv = get_inventory()
         text = "\n".join(
-            f"{i}: {n} ({b}) - Bestand: {c}" for i, b, n, c in inv
+            f"{i}: {n} ({b}) - Bestand: {c} - Preis: {p:.2f}" for i, b, n, c, p in inv
         )
         messagebox.showinfo("Inventar", text or "Keine Produkte", parent=self)
 

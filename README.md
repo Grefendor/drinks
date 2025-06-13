@@ -39,6 +39,7 @@ Start automatisch erstellt, falls sie noch nicht existieren.
 - Benutzerverwaltung (Admins können neue Benutzer anlegen)
 - Produkte per Barcode erfassen
 - Buchungen und Bestandsverwaltung
+- Preis pro Produkt und Kostenübersicht je Nutzer
 - Export eines Verbrauchsberichts als PDF
 - Export der Nutzerliste als PDF
 - Export der Produktliste als PDF

@@ -39,15 +39,15 @@ def ensure_initial_admin():
 
 def show_inventory():
     print("\n=== Aktueller Bestand ===")
-    for _id, barcode, name, count in get_inventory():
-        print(f"{_id}: {name} (Barcode: {barcode}) – Bestand: {count}")
+    for _id, barcode, name, count, price in get_inventory():
+        print(f"{_id}: {name} (Barcode: {barcode}) – Bestand: {count} – Preis: {price:.2f}")
     print()
 
 def edit_inventory():
     barcode = input("Barcode des Produkts zum Bearbeiten: ").strip()
     try:
         # suche altes
-        inv = [(b, n, c) for (_, b, n, c) in get_inventory() if b == barcode]
+        inv = [(b, n, c) for (_, b, n, c, _) in get_inventory() if b == barcode]
         if not inv:
             print("Produkt nicht gefunden.")
             return
@@ -116,7 +116,12 @@ def admin_menu(current_user_id: int):
                 name = input("Produktname manuell eingeben: ").strip()
             cnt = input("Anfangsbestand (default 0): ").strip()
             cnt = int(cnt) if cnt.isdigit() else 0
-            create_product(bc, name, cnt)
+            price_in = input("Preis pro Stück (z.B. 1.50): ").strip().replace(",", ".")
+            try:
+                price = float(price_in) if price_in else 0.0
+            except ValueError:
+                price = 0.0
+            create_product(bc, name, cnt, price)
         elif choice == "3":
             show_inventory()
         elif choice == "4":
@@ -140,8 +145,11 @@ def user_menu(user_id: int, user_name: str):
     summary = get_user_summary(user_id)
     print(f"\n=== Übersicht für {user_name} ===")
     if summary:
-        for name, cnt in summary:
-            print(f"{name}: {cnt}")
+        total = 0
+        for name, price, cnt, row_total in summary:
+            print(f"{name}: {cnt} x {price:.2f} = {row_total:.2f}")
+            total += row_total
+        print(f"Gesamt: {total:.2f}")
     else:
         print("Keine Buchungen vorhanden.")
     print("Bitte Barcode scannen…")
