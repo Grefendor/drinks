@@ -30,7 +30,16 @@ def export_pdf(path="report.pdf"):
     rows = cur.fetchall()
     conn.close()
 
-    data = [("Nutzer", "Produkt", "Verbrauch", "Preis", "Kosten")] + rows
+    data = [("Nutzer", "Produkt", "Verbrauch", "Preis", "Kosten")] + [
+        (
+            n,
+            p,
+            v,
+            f"{pr:.2f}",
+            f"{co:.2f}"
+        )
+        for n, p, v, pr, co in rows
+    ]
     doc = SimpleDocTemplate(path, pagesize=A4)
     table = Table(data, colWidths=[150, 180, 70, 60, 70])
     table.setStyle(TableStyle([
@@ -76,7 +85,16 @@ def export_inventory_pdf(path="inventory.pdf"):
     rows = cur.fetchall()
     conn.close()
 
-    data = [("ID", "Barcode", "Name", "Bestand", "Preis")] + rows
+    data = [("ID", "Barcode", "Name", "Bestand", "Preis")] + [
+        (
+            i,
+            b,
+            n,
+            c,
+            f"{p:.2f}"
+        )
+        for i, b, n, c, p in rows
+    ]
     doc = SimpleDocTemplate(path, pagesize=A4)
     table = Table(data, colWidths=[40, 100, 180, 60, 60])
     table.setStyle(TableStyle([
