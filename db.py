@@ -175,3 +175,23 @@ def delete_product(barcode: str):
         raise ValueError("Barcode nicht gefunden")
     conn.commit()
     conn.close()
+
+
+def get_user_summary(user_id: int):
+    """Return aggregated consumption for a user."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT p.name, COUNT(t.id) as count
+        FROM transactions t
+        JOIN products p ON t.product_id = p.id
+        WHERE t.user_id = ?
+        GROUP BY p.id
+        ORDER BY p.name
+        """,
+        (user_id,)
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return rows

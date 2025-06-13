@@ -3,7 +3,7 @@ import requests
 from db import (
     init_db, authenticate, create_user, create_product,
     record_transaction, get_inventory, update_product_count,
-    delete_user, delete_product
+    delete_user, delete_product, get_user_summary
 )
 from admin import export_pdf, export_users_pdf, export_inventory_pdf
 
@@ -137,7 +137,14 @@ def admin_menu(current_user_id: int):
             print("Ungültige Auswahl.")
 
 def user_menu(user_id: int, user_name: str):
-    print(f"\nHallo {user_name}! Bitte Barcode scannen…")
+    summary = get_user_summary(user_id)
+    print(f"\n=== Übersicht für {user_name} ===")
+    if summary:
+        for name, cnt in summary:
+            print(f"{name}: {cnt}")
+    else:
+        print("Keine Buchungen vorhanden.")
+    print("Bitte Barcode scannen…")
     barcode = input().strip()
     record_transaction(user_id, barcode)
 

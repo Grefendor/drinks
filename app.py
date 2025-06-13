@@ -5,7 +5,7 @@ import webbrowser
 from db import (
     init_db, get_user_count, authenticate, create_user,
     create_product, record_transaction, get_inventory, update_product_count,
-    update_pin, delete_user, delete_product
+    update_pin, delete_user, delete_product, get_user_summary
 )
 from admin import export_pdf, export_users_pdf, export_inventory_pdf
 
@@ -120,6 +120,13 @@ class UserFrame(tk.Frame):
         ttk.Button(self, text="N\u00e4chster Scan xN", command=self._set_multi).pack(pady=5)
         ttk.Button(self, text="Logout", command=lambda: master._show_frame(LoginFrame)).pack(side="bottom", pady=20)
         self.next_qty = 1
+        self.summary_var = tk.StringVar()
+        tk.Label(
+            self,
+            textvariable=self.summary_var,
+            justify="center",
+            anchor="center",
+        ).pack(pady=5, fill="x", padx=20)
         self.logout_after_id = None
 
     def _restart_timer(self):
@@ -154,6 +161,12 @@ class UserFrame(tk.Frame):
         self.qty.delete(0, tk.END)
         self.qty.insert(0, "1")
         self.next_qty = 1
+        summary = get_user_summary(self.master.user[0])
+        if summary:
+            text = "\n".join(f"{n}: {c}" for n, c in summary)
+        else:
+            text = "Keine Buchungen vorhanden."
+        self.summary_var.set(text)
         self.entry.focus()
         self._restart_timer()
 
