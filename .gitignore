@@ -1,0 +1,4 @@
+__pycache__/
+backups/
+drinks.db
+venv/
